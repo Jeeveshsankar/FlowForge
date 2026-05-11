@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  password_hash    String?           
+  name             String?
+  avatar_url       String?
+  plan             String            @default("free") // free, pro, enterprise
+  api_key          String?           @unique
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+
+  workflows        Workflow[]
+  workflow_runs    WorkflowRun[]
+  user_integrations UserIntegration[]
+}
+
+model Workflow {
+  id           String        @id @default(uuid())
+  user_id      String
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  is_active    Boolean       @default(false)
+  is_deployed  Boolean       @default(false)
+  nodes        String        @default("[]")
+  edges        String        @default("[]")
+  settings     String        @default("{}")
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+  last_run_at  DateTime?
+
+  runs         WorkflowRun[]
+}
+
+model WorkflowRun {
+  id            String    @id @default(uuid())
+  workflow_id   String
+  workflow      Workflow  @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  status        String    // pending, running, success, failed
+  started_at    DateTime  @default(now())
+  completed_at  DateTime?
+  duration_ms   Int?
+  steps         String    @default("[]") // JSON array of each node's execution result
+  error_message String?
+  trigger_data  String?     // The data that triggered the workflow
+}
+
+model Integration {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  category         String
+  logo_url         String?
+  description      String?
+  auth_type        String            // oauth2, api_key, basic
+  config_schema    String              @default("{}")
+
+  user_integrations UserIntegration[]
+}
+
+model UserIntegration {
+  id                    String      @id @default(uuid())
+  user_id               String
+  user                  User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  integration_id        String
+  integration           Integration @relation(fields: [integration_id], references: [id], onDelete: Cascade)
+  status                String      // connected, disconnected, error
+  credentials_encrypted String        // Store encrypted tokens/keys
+  connected_at          DateTime    @default(now())
+  
+  @@unique([user_id, integration_id])
+}
+
+model Template {
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  category         String
+  nodes            String     @default("[]")
+  edges            String     @default("[]")
+  integrations_used String   @default("[]") // JSON string of array
+  use_count        Int      @default(0)
+  created_by       String?
+}
