@@ -1,6 +1,6 @@
 # FlowForge AI
 
-FlowForge is a high-performance, AI-native visual workflow automation platform designed for modern enterprise operations. It provides a sophisticated node-based interface for architecting complex logic chains, powered by a real-time execution engine and integrated neural network assistance.
+FlowForge is a high-performance, AI-native visual workflow automation platform designed for modern enterprise operations. It provides a sophisticated node-based interface for architecting complex logic chains, powered by a low-latency execution engine and integrated neural network assistance for automated blueprint generation.
 
 ## System Architecture
 
